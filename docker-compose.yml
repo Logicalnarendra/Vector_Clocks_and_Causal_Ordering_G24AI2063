@@ -1,0 +1,56 @@
+version: '3.8'
+
+services:
+  node_0:
+    build: .
+    container_name: kv_node_0
+    ports:
+      - "5000:5000"
+    command: ["python", "src/node.py", "node_0", "5000", "node_0:5000,node_1:5001,node_2:5002"]
+    networks:
+      - kv_network
+    environment:
+      - PYTHONUNBUFFERED=1
+    restart: unless-stopped
+
+  node_1:
+    build: .
+    container_name: kv_node_1
+    ports:
+      - "5001:5001"
+    command: ["python", "src/node.py", "node_1", "5001", "node_0:5000,node_1:5001,node_2:5002"]
+    networks:
+      - kv_network
+    environment:
+      - PYTHONUNBUFFERED=1
+    restart: unless-stopped
+
+  node_2:
+    build: .
+    container_name: kv_node_2
+    ports:
+      - "5002:5002"
+    command: ["python", "src/node.py", "node_2", "5002", "node_0:5000,node_1:5001,node_2:5002"]
+    networks:
+      - kv_network
+    environment:
+      - PYTHONUNBUFFERED=1
+    restart: unless-stopped
+
+  client:
+    build: .
+    container_name: kv_client
+    command: ["python", "src/client.py"]
+    networks:
+      - kv_network
+    environment:
+      - PYTHONUNBUFFERED=1
+    depends_on:
+      - node_0
+      - node_1
+      - node_2
+    restart: "no"
+
+networks:
+  kv_network:
+    driver: bridge 
